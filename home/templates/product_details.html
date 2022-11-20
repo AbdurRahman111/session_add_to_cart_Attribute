@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Product - Our commercer{% endblock %}
+
+{% block body %}
+
+<div class="row" style="margin-top:25px; padding:20px;">
+    <div class="col-md-1 col-lg-1"></div>
+    <div class="col-md-4 col-lg-4">
+        <div class="card">
+          <div class="card-body">
+            <img src="{{get_products.Product_Picture_upload_1.url}}" class="card-img-top" alt="...">
+          </div>
+        </div>
+
+    </div>
+    <div class="col-md-6 col-lg-6">
+        <div class="card" style="width: 100%;">
+          <div class="card-body">
+            <h3 class="card-title" id="show_name_by_attr">{{ get_products.Product_Name }}</h3>
+            <h6 class="card-subtitle mb-2 text-muted">Category : {{ get_products.Product_Category }}</h6>
+
+            <h3 class="card-title mt-3">{{first_price}}$ - {{last_price}}$</h3>
+
+            <form action="{% url 'add_to_cart' %}" method="POST">{% csrf_token %}
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="color_dropdown">Color</label>
+                  </div>
+                  <select class="custom-select" id="color_dropdown" name="color_prod" onchange="function_select_attribute()">
+                    <option selected>Choose...</option>
+                    {% for clr in get_products.get_all_colors %}
+                    <option value="{{ clr.color }},{{ clr.id }}">{{ clr.color }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="size_dropdown">Size</label>
+                  </div>
+                  <select class="custom-select" id="size_dropdown" name="size_prod" onchange="function_select_attribute()">
+                    <option selected>Choose...</option>
+                    {% for size in get_products.get_all_sizes %}
+                      <option value="{{ size.price }},{{ size.id }},{{ size.size }}">{{ size.size }} ({{ size.price }}$)</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="Embroidery_id">Embroidery</label>
+                  </div>
+                  <select class="custom-select" id="Embroidery_id" name="embroidery_prod" onchange="function_select_attribute()">
+                    <option selected>Choose...</option>
+                    <option value="0,0,No Embroidery">No Embroidery</option>
+                    {% for emb in get_products.get_all_Embroidery %}
+                    <option value="{{ emb.Additional_Price }},{{ emb.id }},{{ emb.Embroidery }}">{{ emb.Embroidery }} ({{ emb.Additional_Price }}$)</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <h5 class="card-title mt-3" id="price_full_text"></h5>
+
+                <input type="hidden" value="{{ get_products.id }}" name="id_prod">
+
+                <div id="add_to_cart_btn_id">
+                    <button class="btn btn-dark text-center" style="margin-top:30px; margin-bottom:10px;"  disabled>
+                        <span class="badge badge-warning">
+                            <i class="fa fa-shopping-cart" style="font-size:18px"></i>
+                        </span>
+                        <i style="font-size:18px">Add to cart</i>
+                    </button>
+                </div>
+            </form>
+          <hr>
+          <h2>Description:</h2><br>
+          <p class="card-text">{{ get_products.Description }}</p>
+
+          </div>
+        </div>
+    </div>
+    <div class="col-md-1 col-lg-1"></div>
+</div>
+
+{{ request.session.list_of_items }}
+<!--choose attribute function-->
+<script>
+
+function decodeHtml(html) {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+}
+
+
+
+function function_select_attribute(){
+    var vr_color_dropdown = document.getElementById('color_dropdown').value;
+    const ColorArray = vr_color_dropdown.split(",");
+    color_value = ColorArray[0]
+    color_id = ColorArray[1]
+
+
+    var vr_size_dropdown = document.getElementById('size_dropdown').value;
+    const SizeArray = vr_size_dropdown.split(",");
+    size_value = SizeArray[0]
+    size_id = SizeArray[1]
+
+    var vr_Embroidery_id = document.getElementById('Embroidery_id').value;
+    const EmbroideryArray = vr_Embroidery_id.split(",");
+    Embroidery_value = EmbroideryArray[0]
+    Embroidery_id = EmbroideryArray[1]
+
+    console.log(color_value, size_value, Embroidery_value);
+
+    if (color_value != "Choose..." && size_value != "Choose..." && Embroidery_value != "Choose..."){
+        document.getElementById('price_full_text').innerHTML = `Price : <span id="show_price_by_attr">0</span>$`;
+        document.getElementById('show_price_by_attr').innerHTML = parseInt(size_value) + parseInt(Embroidery_value);
+
+        item_id= '{{ get_products.id }}' + `_${color_id}_${size_id}_${Embroidery_id}`;
+        console.log(item_id);
+        var carts_all = decodeHtml('{{ request.session.list_of_items }}')
+
+        console.log(typeof(carts_all));
+        console.log(carts_all);
+        first_slice = carts_all.slice(0, -2);
+        final_slice = first_slice.slice(2);
+        console.log(final_slice.split("', '"));
+        var cart_list_final = final_slice.split("', '")
+        for (var crt in cart_list_final){
+            console.log(cart_list_final[crt]);
+
+            if(cart_list_final[crt] == item_id){
+                console.log('pass')
+                document.getElementById('add_to_cart_btn_id').innerHTML = `<a class="btn" style="background-color:#5F9C15; color:white;">✓ Added <i class="fa fa-shopping-cart"></i></a>`;
+                break
+            }
+            else{
+                document.getElementById('add_to_cart_btn_id').innerHTML = `<button class="btn btn-dark text-center" style="margin-top:30px; margin-bottom:10px;" type="submit">
+                    <span class="badge badge-warning">
+                        <i class="fa fa-shopping-cart" style="font-size:18px"></i>
+                    </span>
+                    <i style="font-size:18px">Add to cart</i>
+                </button>`;
+            }
+        }
+    }
+    else{
+        document.getElementById('price_full_text').innerHTML = "";
+        document.getElementById('add_to_cart_btn_id').innerHTML = `<button class="btn btn-dark text-center" style="margin-top:30px; margin-bottom:10px;" disabled>
+                    <span class="badge badge-warning">
+                        <i class="fa fa-shopping-cart" style="font-size:18px"></i>
+                    </span>
+                    <i style="font-size:18px">Add to cart</i>
+                </button>`;
+    }
+}
+
+
+
+</script>
+{% endblock %}

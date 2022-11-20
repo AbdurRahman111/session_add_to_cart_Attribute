@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Our commercer{% endblock %}
+
+{% block body %}
+
+<div class="row" style="margin-top:25px; padding:20px;">
+    <div class="col-md-3 col-lg-3">
+        <div class="list-group">
+          <a href="{% url 'index' %}" type="button" class="list-group-item list-group-item-action {% if home %}active{% endif %}" aria-current="true">
+            All Products
+          </a>
+            {% for cat in all_categories %}
+          <a href="{% url 'category_products' cat.id %}" type="button" class="list-group-item list-group-item-action {% if get_cat.id == cat.id %}active{% endif %}" style="">{{ cat.Category_Name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-9 col-lg-9">
+        <div class="row">
+            {% if all_products %}
+            {% for product in all_products %}
+            <div class="col-md-3 col-lg-3">
+                <div class="card" style="width: 100%;">
+                  <img src="{{ product.Product_Picture_upload_1.url }}" class="card-img-top" style="padding-top:28px;padding-left:28px;padding-right:28px;" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ product.Product_Name }}</h5>
+                    <a href="{% url 'product_details' product.id %}" class="btn btn-dark text-center">
+                        <i style="font-size:18px">View Details</i>
+                    </a>
+                  </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <h3 class="text-center">No Product Available</h3>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
